@@ -740,7 +740,21 @@ display:none;
   max-width: max-content;
 }
 }
+.abc--more{
+display:none;
+width:100%;
+}
 
+.abc--more.open{
+display:flex;
+flex-direction:column;
+gap:0.9rem;
+width:100%;
+}
+
+.abc--more .abc--item{
+width:100%;
+}
 
 
 
@@ -755,6 +769,9 @@ display:none;
 }}
 
 </style>
+
+
+
 <script>
 
 const tabs = document.querySelectorAll('.abc--tab');
@@ -810,20 +827,18 @@ active.classList.toggle('open');
 toggle.textContent = open ? 'Zwiń' : 'Zobacz więcej';
 
 
-/* animacja elementów niezależna od scrolla */
+/* natychmiastowa animacja elementów */
 
 if(open){
 
-const items = more.querySelectorAll('.abc--reveal');
+const items = Array.from(more.querySelectorAll('.abc--item'));
 
-items.forEach((item,i)=>{
+items.sort((a,b)=>{
+return a.offsetTop - b.offsetTop;
+});
 
-item.classList.remove('show');
-
-setTimeout(()=>{
+items.forEach(item=>{
 item.classList.add('show');
-}, i*90);
-
 });
 
 }
@@ -855,12 +870,10 @@ more.appendChild(item);
 
 }
 
-
 window.addEventListener('load',setupCennikMobile);
 window.addEventListener('resize',setupCennikMobile);
 
 </script>
-
 <section id="team" class="abc-team">
   <div class="abc-team--wrap">
 
@@ -1252,7 +1265,7 @@ aboutFadeElements.forEach((el,i)=>{
         </div>
 
         <div class="review-rating">
-          <div class="rating-number">5.0</div>
+          <div class="rating-number">4.9</div>
           <div class="rating-stars">★★★★★</div>
         </div>
 
