@@ -458,7 +458,7 @@ body.menu-open{overflow:hidden}
   <div class="layer depth-2"></div>
   <div class="layer depth-3"></div>
   <div class="content">
-    <h1>Raubo Studio Fryzjerskie</h1>
+    <h1>Angelika Raubo Studio Fryzjerskie</h1>
     <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry</p>
     <div class="actions">
       <a href="https://booksy.com/pl-pl/239918_angelika-raubo-studio-fryzjerskie_fryzjer_22001_wejherowo" class="salon-btn booksy-btn">
@@ -622,19 +622,33 @@ opacity:1;
 font-weight:600;
 }
 
+.abc--cennik-list{
+position:relative;
+}
+
 .abc--cennik-group{
-display:none;
+position:absolute;
+top:0;
+left:0;
+width:100%;
+display:flex;
 flex-direction:column;
 gap:0.9rem;
+
 opacity:0;
 transform:translateY(10px);
-transition:0.4s;
+pointer-events:none;
+
+transition:
+opacity .35s ease,
+transform .35s ease;
 }
 
 .abc--cennik-group.active{
-display:flex;
 opacity:1;
 transform:translateY(0);
+pointer-events:auto;
+position:relative;
 }
 
 .abc--item{
@@ -660,15 +674,11 @@ opacity:0.6;
 }
 
 .abc--more{
-max-height:0;
-overflow:hidden;
-transition:max-height 0.4s ease;
+display:none;
 }
 
 .abc--more.open{
-max-height:300px;
-overflow-y:auto;
-padding-right:6px;
+display:block;
 }
 
 .abc--toggle{
@@ -745,98 +755,110 @@ display:none;
 }}
 
 </style>
-
 <script>
+
 const tabs = document.querySelectorAll('.abc--tab');
 const groups = document.querySelectorAll('.abc--cennik-group');
 const toggle = document.querySelector('.abc--toggle');
 
-function updateMoreHeight() {
-    const active = document.querySelector('.abc--cennik-group.active');
-    if (!active) return;
-    const more = active.querySelector('.abc--more');
-    if (!more) return;
-
-    if (more.classList.contains('open')) {
-        // Tymczasowo pokazujemy blok, żeby policzyć scrollHeight
-        more.style.display = 'block';
-        const scrollH = more.scrollHeight;
-        const maxH = 400; // max wysokość w px, powyżej → scroll
-        if (scrollH > maxH) {
-            more.style.height = maxH + 'px';
-            more.style.overflowY = 'auto';
-        } else {
-            more.style.height = scrollH + 'px';
-            more.style.overflowY = 'hidden';
-        }
-    } else {
-        more.style.height = '0px';
-        more.style.overflowY = 'hidden';
-    }
-}
 
 /* TABY */
+
 tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-        tabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
 
-        groups.forEach(g => {
-            g.classList.remove('active');
-            if (g.dataset.type === tab.dataset.type) {
-                setTimeout(() => g.classList.add('active'), 10);
-            }
-        });
+tab.addEventListener('click', () => {
 
-        document.querySelectorAll('.abc--more').forEach(m => {
-            m.classList.remove('open');
-            m.style.height = '0px';
-            m.style.overflowY = 'hidden';
-        });
+tabs.forEach(t => t.classList.remove('active'));
+tab.classList.add('active');
 
-        toggle.textContent = 'Zobacz więcej';
-    });
+groups.forEach(group=>{
+group.classList.toggle(
+'active',
+group.dataset.type === tab.dataset.type
+);
 });
 
-/* TOGGLE */
+/* reset rozwinięcia */
+
+groups.forEach(g=>g.classList.remove('open'));
+
+document.querySelectorAll('.abc--more').forEach(m=>{
+m.classList.remove('open');
+});
+
+toggle.textContent='Zobacz więcej';
+
+});
+
+});
+
+
+/* ZOBACZ WIĘCEJ */
+
 toggle.addEventListener('click', () => {
-    const active = document.querySelector('.abc--cennik-group.active');
-    const more = active.querySelector('.abc--more');
 
-    more.classList.toggle('open');
-    updateMoreHeight();
+const active = document.querySelector('.abc--cennik-group.active');
+if(!active) return;
 
-    toggle.textContent = more.classList.contains('open') ? 'Zwiń' : 'Zobacz więcej';
+const more = active.querySelector('.abc--more');
+if(!more) return;
+
+const open = more.classList.toggle('open');
+
+active.classList.toggle('open');
+
+toggle.textContent = open ? 'Zwiń' : 'Zobacz więcej';
+
+
+/* animacja elementów niezależna od scrolla */
+
+if(open){
+
+const items = more.querySelectorAll('.abc--reveal');
+
+items.forEach((item,i)=>{
+
+item.classList.remove('show');
+
+setTimeout(()=>{
+item.classList.add('show');
+}, i*90);
+
 });
 
-/* MOBILE LOGIKA PRZENOSZENIA ELEMENTÓW */
-function setupCennikMobile() {
-    const mobile = window.innerWidth <= 768;
-
-    document.querySelectorAll('.abc--cennik-group').forEach(group => {
-        const items = Array.from(group.querySelectorAll(':scope > .abc--item'));
-        const more = group.querySelector('.abc--more');
-        if (!more) return;
-
-        const limit = mobile ? 7 : 12;
-
-        items.forEach((item, i) => {
-            if (i >= limit && item.parentNode !== more) more.appendChild(item);
-        });
-
-        // Ustawiamy max-height / scroll także przy resize
-        if (!mobile) {
-            more.style.height = '0px';
-            more.style.overflowY = 'hidden';
-        }
-    });
 }
 
-setupCennikMobile();
-window.addEventListener('resize', () => {
-    setupCennikMobile();
-    updateMoreHeight();
 });
+
+
+/* MOBILE – przenoszenie elementów */
+
+function setupCennikMobile(){
+
+const mobile = window.innerWidth <= 768;
+
+document.querySelectorAll('.abc--cennik-group').forEach(group=>{
+
+const items = Array.from(group.querySelectorAll(':scope > .abc--item'));
+const more = group.querySelector('.abc--more');
+if(!more) return;
+
+const limit = mobile ? 7 : 12;
+
+items.forEach((item,i)=>{
+if(i>=limit && item.parentNode!==more){
+more.appendChild(item);
+}
+});
+
+});
+
+}
+
+
+window.addEventListener('load',setupCennikMobile);
+window.addEventListener('resize',setupCennikMobile);
+
 </script>
 
 <section id="team" class="abc-team">
@@ -1500,7 +1522,7 @@ contactBlocks.forEach((block,index)=>{
     <div class="footer-grid">
 
       <div class="footer-col">
-        <h3>Raubo Studio Fryzjerskie</h3>
+        <h3>Angelika Raubo Studio Fryzjerskie</h3>
         <p>
           Nowoczesne studio fryzjerskie w Bolszewie.
           Profesjonalne strzyżenia, koloryzacje i indywidualne podejście.
